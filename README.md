@@ -1,5 +1,7 @@
 # Chat-App-Service-API
 
-Implemented using node.js, mongo db & socket.io
+Backend Development for a # Chat-App-Service-API
 
-Backend Development for a # Chat-App-Service
+Implemented using Node JS, Mongo DB & Socket.io
+
+Used ES Modules(MJS)

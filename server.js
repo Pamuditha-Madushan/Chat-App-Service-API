@@ -1,73 +1,91 @@
-const express = require("express");
-const http = require("http");
-const dotenv = require("dotenv")
+import express from "express";
 const app = express();
+import dotenv from "dotenv";
 dotenv.config();
-const port = process.env.PORT || 5000
-const server = http.createServer(app);
-const colors = require("colors");
-const connectDB = require("./config/db");
-const userRoutes = require("./routes/userRoutes");
-const chatRoutes = require("./routes/chatRoutes")
-const messageRoutes = require("./routes/messageRoutes")
-const imageRoutes=require("./routes/imageRoutes")
-//const AWS = require('aws-sdk');
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import connectDB from "./src/config/dbConn.js";
+import logger from "./src/utils/logger.js";
+import { requestLogger, errorLogger } from "./src/middlewares/logEvents.js";
+import gracefulShutdown from "./src/services/gracefulShutdown.js";
+import corsOptions from "./src/config/corsOptions.js";
+import allowCredentials from "./src/middlewares/allowCredentials.js";
+import colors from "colors";
+import verifyJWT from "./src/middlewares/authMiddleware.js";
+import { initializeSocket } from "./src/socket/socketServer.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import chatRoutes from "./src/routes/chatRoutes.js";
+import messageRoutes from "./src/routes/messageRoutes.js";
+import imageRoutes from "./src/routes/imageRoutes.js";
+// import AWS from 'aws-sdk';
+// import http from "http";
+// import server from http.createServer(app);
+import { notFound, errorHandler } from "./src/middlewares/errorMiddlewares.js";
 
-const {notFound, errorHandler} = require("./middlewares/errorMiddlewares");
+const port = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(requestLogger);
+app.use(errorLogger);
 
 connectDB();
 
+app.use(allowCredentials);
+
+app.use(cors(corsOptions));
+
+app.use(express.urlencoded({ extended: true }));
+
+app.use(express.json());
+
+app.use(cookieParser());
+
 app.get("/check", (req, res) => {
-    res.send("Api was running");
-})
+  res.send("API is working just fine");
+});
 
 app.use("/api/user", userRoutes);
+app.use("/api/image", imageRoutes);
+
+app.use(verifyJWT);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
-app.use("/api/image",imageRoutes)
-
 
 app.use(notFound);
 app.use(errorHandler);
-const listenServer =app.listen(port, console.log(`Server started on ${port}`))
-const io = require("socket.io")(listenServer, {
-    pingTimeout: 60000,
-    cors: {
-        origin: "https://mern-chat-app-e6zt.onrender.com",
-        credentials: true
-    },
+
+let listenServer;
+
+mongoose.connection.once("open", () => {
+  listenServer = app.listen(
+    port,
+    logger.info(`Server started on port: ${port}`)
+  );
 });
 
-io.on("connection", (socket) => {
-    console.log("Connected to socket.io");
-    socket.on("setup", (userData) => {
-        socket.join(userData._id);
-        socket.emit("connected");
-    });
+initializeSocket(listenServer);
 
-    socket.on("join chat", (room) => {
-        socket.join(room);
-        console.log("User Joined Room: " + room);
-    });
-    socket.on("typing", (room) => socket.in(room).emit("typing"));
-    socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+process.on("SIGINT", async () => {
+  logger.info("Received SIGINT, shutting down gracefully...");
+  await mongoose.connection.close();
+  logger.info("MongoDB connection closed");
+  process.exit(0);
+});
 
-    socket.on("new message", (newMessageReceived) => {
-        var chat = newMessageReceived.chat;
+// especially useful in cloud environments (e.g., Kubernetes, Docker)
+// process.on("SIGTERM", async () => {
+//   logger.info("Received SIGTERM, shutting down gracefully...");
+//   await mongoose.connection.close();
+//   logger.info("MongoDB connection closed");
+//   process.exit(0);
+// });
 
-        if (!chat.users) return console.log("chat.users not defined");
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error(`Unhandled Rejection at: ${promise}, ${reason}`);
+  gracefulShutdown(listenServer);
+});
 
-        chat.users.forEach((user) => {
-            if (user._id == newMessageReceived.sender._id) return;
-
-            socket.in(user._id).emit("message received", newMessageReceived);
-        });
-    });
-
-    socket.off("setup", () => {
-        console.log("USER DISCONNECTED");
-        socket.leave(userData._id);
-    });
+process.on("uncaughtException", (err) => {
+  logger.error(`Uncaught Exception: ${err.message}, Stack: ${err.stack}`);
+  gracefulShutdown(listenServer);
 });
