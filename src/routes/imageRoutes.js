@@ -4,7 +4,7 @@ import multer from "multer";
 
 const router = express.Router();
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "src/uploads/" });
 
 router.post("/upload", upload.single("file"), uploadImage);
 
