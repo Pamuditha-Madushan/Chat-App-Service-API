@@ -9,7 +9,7 @@ export const initializeSocket = (server) => {
       // process.env.NODE_ENV === "production"
       //   ? false
       //   : ["http://localhost:3500", "http://127.0.0.1:3500"],
-      // origin: "https://mern-chat-app-e6zt.onrender.com",
+      // origin: "https://real-time-chat-web-app-backend.onrender.com",
       // credentials: true,
     },
   });
