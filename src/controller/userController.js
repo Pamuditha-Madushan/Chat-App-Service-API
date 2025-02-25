@@ -15,7 +15,7 @@ const isEmailExists = async (email) => {
 
 const registerUser = asyncHandler(async (req, res, next) => {
   try {
-    const { name, email, password, images } = req.body;
+    const { name, email, password, profileImage } = req.body;
 
     if (!name || !email || !password) {
       return res
@@ -33,14 +33,14 @@ const registerUser = asyncHandler(async (req, res, next) => {
       name,
       email,
       password,
-      images,
+      profileImage,
     });
 
     res.status(201).json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      images: user.images,
+      profileImage: user.profileImage,
     });
   } catch (error) {
     next(error);
@@ -96,7 +96,7 @@ const handleLogin = asyncHandler(async (req, res, next) => {
         _id: foundUser._id,
         name: foundUser.name,
         email: foundUser.email,
-        images: foundUser.images,
+        profileImage: foundUser.profileImage,
       });
     } else {
       return res.sendStatus(401);

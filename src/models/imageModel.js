@@ -2,11 +2,21 @@ import mongoose from "mongoose";
 
 const imageDetailsSchema = mongoose.Schema(
   {
-    name: String,
-    age: Number,
-    imageUrl: String,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    imageUrl: {
+      type: String,
+      required: true,
+    },
+    uploadedTime: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("image_details", imageDetailsSchema);
+export default mongoose.model("Image", imageDetailsSchema);

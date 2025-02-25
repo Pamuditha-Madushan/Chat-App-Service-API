@@ -26,7 +26,7 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    images: {
+    profileImage: {
       type: String,
       default:
         "https://icon-library.com/images/profile-pic-icon/profile-pic-icon-16.jpg",

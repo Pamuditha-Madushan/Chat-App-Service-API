@@ -5,12 +5,8 @@ export const initializeSocket = (server) => {
   const io = new Server(server, {
     pingTimeout: 60000,
     cors: {
-      origin: "*",
-      // process.env.NODE_ENV === "production"
-      //   ? false
-      //   : ["http://localhost:3500", "http://127.0.0.1:3500"],
-      // origin: "https://mern-chat-app-e6zt.onrender.com",
-      // credentials: true,
+      origin: "https://real-time-chat-web-app-backend.onrender.com",
+      credentials: true,
     },
   });
 
