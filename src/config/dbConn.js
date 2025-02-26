@@ -3,7 +3,7 @@ import logger from "../utils/logger.js";
 
 const connectDB = async () => {
   if (!process.env.MONGO_URI) {
-    logger.error("MONGO_URI is not defined in the environment variables");
+    logger.error("MONGODB_URI is not defined in the environment variables");
     process.exit(1);
   }
   try {

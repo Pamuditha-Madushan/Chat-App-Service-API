@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 import logger from "../utils/logger.js";
 
 const gracefulShutdown = (server) => {
-  logger.info("Starting graceful shutdown...");
+  logger.warn("Starting graceful shutdown...");
 
   mongoose.connection.close().then(() => {
-    logger.info("MongoDB connection closed");
+    logger.warn("MongoDB connection closed");
 
     server.close(() => {
-      logger.info("Server is closed");
+      logger.warn("Server is closed");
       process.exit(1);
     });
   });

@@ -57,4 +57,4 @@ chatSchema.pre("save", async function (next) {
 
 // chatModel.index({ chatName: 1, users: 1, groupAdmins: 1 }, { unique: true });  // prevent using compound index
 
-export default mongoose.model("Chat", chatSchema);
+export default mongoose.model("chat", chatSchema);

@@ -40,7 +40,7 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-app.get("/check", (req, res) => {
+app.get("/", (req, res) => {
   res.send("API is working just fine");
 });
 
@@ -66,9 +66,9 @@ mongoose.connection.once("open", () => {
 initializeSocket(listenServer);
 
 process.on("SIGINT", async () => {
-  logger.info("Received SIGINT, shutting down gracefully...");
+  logger.warn("Received SIGINT, shutting down gracefully...");
   await mongoose.connection.close();
-  logger.info("MongoDB connection closed");
+  logger.warn("MongoDB connection closed");
   process.exit(0);
 });
 
